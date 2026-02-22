@@ -1,4 +1,4 @@
--- by que1s hi 23.02.2026
+-- 23.02.2026 by que1s(btw)
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
@@ -36,9 +36,7 @@ Library.UpdateTheme = function(themeName)
 		local obj = ThemeObjects[i]
 		if obj.Inst and obj.Inst.Parent then
 			TweenService:Create(obj.Inst, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {[obj.Prop] = t[obj.Role]}):Play()
-		else
-			table.remove(ThemeObjects, i)
-		end
+		else table.remove(ThemeObjects, i) end
 	end
 end
 
@@ -50,35 +48,28 @@ if not IsStudio and not isfolder(ConfigFolder) then makefolder(ConfigFolder) end
 
 Library.GetSavedConfigs = function()
 	local list = {}
-	if IsStudio then
-		for name, _ in pairs(StudioMockFiles) do table.insert(list, name) end
-	else
-		for _, file in ipairs(listfiles(ConfigFolder)) do
-			local name = file:match("([^/\\]+)%.txt$") or file:match("([^/\\]+)$")
-			if name then table.insert(list, name) end
-		end
+	if IsStudio then for name, _ in pairs(StudioMockFiles) do table.insert(list, name) end else
+		for _, file in ipairs(listfiles(ConfigFolder)) do local name = file:match("([^/\\]+)%.txt$") or file:match("([^/\\]+)$"); if name then table.insert(list, name) end end
 	end
-	if #list == 0 then table.insert(list, "Default") end
-	return list
+	if #list == 0 then table.insert(list, "Default") end; return list
 end
 
-Library.SaveFile = function(name, data)
-	if IsStudio then StudioMockFiles[name] = data else writefile(ConfigFolder .. "/" .. name .. ".txt", data) end
-end
-
-Library.DeleteFile = function(name)
-	if IsStudio then StudioMockFiles[name] = nil else local path = ConfigFolder .. "/" .. name .. ".txt"; if isfile(path) then delfile(path) end end
-end
+Library.SaveFile = function(name, data) if IsStudio then StudioMockFiles[name] = data else writefile(ConfigFolder .. "/" .. name .. ".txt", data) end end
+Library.DeleteFile = function(name) if IsStudio then StudioMockFiles[name] = nil else local path = ConfigFolder .. "/" .. name .. ".txt"; if isfile(path) then delfile(path) end end end
 
 local NOISE_TEXTURE = "rbxassetid://10217435265"
 
-function Library:CreateWindow(titleText)
+function Library:CreateWindow(Config)
+	local titleText = type(Config) == "table" and Config.Title or Config or "Dashboard"
+	
 	local ScreenGui = Instance.new("ScreenGui"); ScreenGui.Name = "DashboardUI"; ScreenGui.ResetOnSpawn = false; ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling; ScreenGui.Parent = targetParent
 	local NotifyContainer = Instance.new("Frame"); NotifyContainer.Size = UDim2.new(0, 250, 1, -40); NotifyContainer.Position = UDim2.new(1, -270, 0, 20); NotifyContainer.BackgroundTransparency = 1; NotifyContainer.ZIndex = 100; NotifyContainer.Parent = ScreenGui
 	local NotifyLayout = Instance.new("UIListLayout"); NotifyLayout.SortOrder = Enum.SortOrder.LayoutOrder; NotifyLayout.VerticalAlignment = Enum.VerticalAlignment.Bottom; NotifyLayout.Padding = UDim.new(0, 10); NotifyLayout.Parent = NotifyContainer
 
-	function Library:Notify(title, text, duration)
-		duration = duration or 3
+	function Library:Notify(NConfig)
+		local title = NConfig.Title or "Notification"
+		local text = NConfig.Content or ""
+		local duration = NConfig.Duration or 3
 		local Holder = Instance.new("Frame"); Holder.Size = UDim2.new(1, 0, 0, 60); Holder.BackgroundTransparency = 1; Holder.Parent = NotifyContainer
 		local NotifFrame = Instance.new("Frame"); NotifFrame.Size = UDim2.new(1, 0, 1, 0); NotifFrame.Position = UDim2.new(1, 50, 0, 0); NotifFrame.BackgroundTransparency = 1; AddTheme(NotifFrame, "BackgroundColor3", "CardBg"); NotifFrame.BorderSizePixel = 0; NotifFrame.ZIndex = 101; NotifFrame.Parent = Holder; Instance.new("UICorner", NotifFrame).CornerRadius = UDim.new(0, 8)
 		local NStroke = Instance.new("UIStroke"); NStroke.Transparency = 1; AddTheme(NStroke, "Color", "Border"); NStroke.Parent = NotifFrame
@@ -139,14 +130,17 @@ function Library:CreateWindow(titleText)
 	local Tabs = {}
 	local WindowLib = { WatermarkUI = Watermark }
 	function WindowLib:SetVisible(state) Library:SetVisible(state) end
-	function WindowLib:Notify(title, text, time) Library:Notify(title, text, time) end
+	function WindowLib:Notify(NConfig) Library:Notify(NConfig) end
 
-	function WindowLib:Tab(name)
+	function WindowLib:AddTab(TConfig)
+		local name = TConfig.Title or "Tab"
 		local TabBtn = Instance.new("TextButton"); TabBtn.Size = UDim2.new(1, 0, 0, 36); TabBtn.BackgroundTransparency = 1; TabBtn.Text = "      " .. name; TabBtn.Font = Enum.Font.GothamMedium; AddTheme(TabBtn, "TextColor3", "Muted"); TabBtn.TextSize = 13; TabBtn.TextXAlignment = Enum.TextXAlignment.Left; TabBtn.AutoButtonColor = false; TabBtn.Parent = TabContainer; Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 8)
 		local Indicator = Instance.new("Frame"); Indicator.Size = UDim2.new(0, 3, 0, 0); Indicator.Position = UDim2.new(0, 8, 0.5, 0); Indicator.AnchorPoint = Vector2.new(0, 0.5); AddTheme(Indicator, "BackgroundColor3", "Accent"); Indicator.BorderSizePixel = 0; Indicator.Parent = TabBtn; Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
+		
 		local Page = Instance.new("ScrollingFrame"); Page.Size = UDim2.new(1, 0, 1, 0); Page.BackgroundTransparency = 1; Page.ScrollBarThickness = 2; AddTheme(Page, "ScrollBarImageColor3", "Border"); Page.Parent = PagesHolder; Page.Visible = false; Page.AutomaticCanvasSize = Enum.AutomaticSize.Y; Page.CanvasSize = UDim2.new(0, 0, 0, 0)
 		local Pad = Instance.new("UIPadding"); Pad.PaddingTop = UDim.new(0, 5); Pad.PaddingLeft = UDim.new(0, 30); Pad.PaddingRight = UDim.new(0, 15); Pad.PaddingBottom = UDim.new(0, 20); Pad.Parent = Page
 		local ColumnsLayout = Instance.new("UIListLayout"); ColumnsLayout.FillDirection = Enum.FillDirection.Horizontal; ColumnsLayout.SortOrder = Enum.SortOrder.LayoutOrder; ColumnsLayout.Padding = UDim.new(0, 15); ColumnsLayout.Parent = Page
+		
 		local LeftColumn = Instance.new("Frame"); LeftColumn.Size = UDim2.new(0.5, -7.5, 0, 0); LeftColumn.AutomaticSize = Enum.AutomaticSize.Y; LeftColumn.BackgroundTransparency = 1; LeftColumn.Parent = Page; local LeftList = Instance.new("UIListLayout"); LeftList.SortOrder = Enum.SortOrder.LayoutOrder; LeftList.Padding = UDim.new(0, 15); LeftList.Parent = LeftColumn
 		local RightColumn = Instance.new("Frame"); RightColumn.Size = UDim2.new(0.5, -7.5, 0, 0); RightColumn.AutomaticSize = Enum.AutomaticSize.Y; RightColumn.BackgroundTransparency = 1; RightColumn.Parent = Page; local RightList = Instance.new("UIListLayout"); RightList.SortOrder = Enum.SortOrder.LayoutOrder; RightList.Padding = UDim.new(0, 15); RightList.Parent = RightColumn
 
@@ -160,7 +154,8 @@ function Library:CreateWindow(titleText)
 
 		local TabLib = {}; local isLeftSide = true
 
-		function TabLib:Card(title)
+		function TabLib:AddCard(CConfig)
+			local title = CConfig.Title or "Card"
 			local CardFrame = Instance.new("Frame"); CardFrame.Size = UDim2.new(1, 0, 0, 0); AddTheme(CardFrame, "BackgroundColor3", "CardBg"); CardFrame.BorderSizePixel = 0; CardFrame.AutomaticSize = Enum.AutomaticSize.Y; Instance.new("UICorner", CardFrame).CornerRadius = UDim.new(0, 10); CardFrame.Parent = isLeftSide and LeftColumn or RightColumn; isLeftSide = not isLeftSide
 			local CardPadding = Instance.new("UIPadding"); CardPadding.PaddingTop = UDim.new(0, 15); CardPadding.PaddingBottom = UDim.new(0, 18); CardPadding.PaddingLeft = UDim.new(0, 15); CardPadding.PaddingRight = UDim.new(0, 15); CardPadding.Parent = CardFrame
 			local Stroke = Instance.new("UIStroke"); AddTheme(Stroke, "Color", "Border"); Stroke.Parent = CardFrame
@@ -171,15 +166,16 @@ function Library:CreateWindow(titleText)
 
 			local CardLib = {}
 
-			function CardLib:Button(text, callback)
+			function CardLib:AddButton(EConfig)
+				local text, callback = EConfig.Title or "Button", EConfig.Callback
 				local Btn = Instance.new("TextButton"); Btn.Size = UDim2.new(1, 0, 0, 34); AddTheme(Btn, "BackgroundColor3", "Inactive"); Btn.Text = text; Btn.Font = Enum.Font.GothamMedium; AddTheme(Btn, "TextColor3", "Text"); Btn.TextSize = 12; Btn.AutoButtonColor = false; Btn.Parent = ItemContainer; Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 6); local BStroke = Instance.new("UIStroke"); AddTheme(BStroke, "Color", "Border"); BStroke.Parent = Btn
 				Btn.MouseEnter:Connect(function() TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundTransparency = 0.2}):Play() end)
 				Btn.MouseLeave:Connect(function() TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play() end)
 				Btn.MouseButton1Click:Connect(function() if callback then callback() end end)
 			end
 
-			function CardLib:Toggle(text, default, callback)
-				local state = default or false
+			function CardLib:AddToggle(EConfig)
+				local text, state, callback = EConfig.Title or "Toggle", EConfig.Default or false, EConfig.Callback
 				local TogFrame = Instance.new("TextButton"); TogFrame.Size = UDim2.new(1, 0, 0, 34); TogFrame.BackgroundTransparency = 1; TogFrame.Text = ""; TogFrame.Parent = ItemContainer
 				local Label = Instance.new("TextLabel"); Label.Size = UDim2.new(1, -60, 1, 0); Label.BackgroundTransparency = 1; Label.Text = text; Label.Font = Enum.Font.GothamMedium; AddTheme(Label, "TextColor3", state and "Text" or "Muted"); Label.TextSize = 12; Label.TextXAlignment = Enum.TextXAlignment.Left; Label.Parent = TogFrame
 				local Track = Instance.new("Frame"); Track.Size = UDim2.new(0, 40, 0, 20); Track.AnchorPoint = Vector2.new(1, 0.5); Track.Position = UDim2.new(1, -4, 0.5, 0); AddTheme(Track, "BackgroundColor3", state and "Accent" or "Inactive"); Track.Parent = TogFrame; Instance.new("UICorner", Track).CornerRadius = UDim.new(1, 0)
@@ -187,14 +183,13 @@ function Library:CreateWindow(titleText)
 				TogFrame.MouseButton1Click:Connect(function() state = not state; TweenService:Create(Knob, TweenInfo.new(0.2), {Position = state and UDim2.new(1, -17, 0.5, 0) or UDim2.new(0, 3, 0.5, 0)}):Play(); Track.BackgroundColor3 = Themes[CurrentTheme][state and "Accent" or "Inactive"]; Label.TextColor3 = Themes[CurrentTheme][state and "Text" or "Muted"]; if callback then callback(state) end end)
 			end
 
-			function CardLib:Slider(text, min, max, default, callback)
-				local value = default or min
+			function CardLib:AddSlider(EConfig)
+				local text, min, max, value, callback = EConfig.Title or "Slider", EConfig.Min or 0, EConfig.Max or 100, EConfig.Default or 0, EConfig.Callback
 				local SliderFrame = Instance.new("Frame"); SliderFrame.Size = UDim2.new(1, 0, 0, 46); SliderFrame.BackgroundTransparency = 1; SliderFrame.Parent = ItemContainer
 				local Label = Instance.new("TextLabel"); Label.Size = UDim2.new(1, 0, 0, 20); Label.BackgroundTransparency = 1; Label.Text = text; Label.Font = Enum.Font.GothamMedium; AddTheme(Label, "TextColor3", "Muted"); Label.TextSize = 12; Label.TextXAlignment = Enum.TextXAlignment.Left; Label.Parent = SliderFrame
 				local ValLabel = Instance.new("TextLabel"); ValLabel.Size = UDim2.new(1, 0, 0, 20); ValLabel.BackgroundTransparency = 1; ValLabel.Text = tostring(value); ValLabel.Font = Enum.Font.GothamBold; AddTheme(ValLabel, "TextColor3", "Text"); ValLabel.TextSize = 12; ValLabel.TextXAlignment = Enum.TextXAlignment.Right; ValLabel.Parent = SliderFrame
 				local Track = Instance.new("TextButton"); Track.Size = UDim2.new(1, 0, 0, 6); Track.Position = UDim2.new(0, 0, 0, 28); AddTheme(Track, "BackgroundColor3", "Inactive"); Track.AutoButtonColor = false; Track.Text = ""; Track.Parent = SliderFrame; Instance.new("UICorner", Track).CornerRadius = UDim.new(1, 0)
 				local Fill = Instance.new("Frame"); local pct = (value - min) / (max - min); if pct ~= pct then pct = 0 end; Fill.Size = UDim2.new(pct, 0, 1, 0); AddTheme(Fill, "BackgroundColor3", "Accent"); Fill.BorderSizePixel = 0; Fill.Parent = Track; Instance.new("UICorner", Fill).CornerRadius = UDim.new(1, 0)
-
 				local dragging = false
 				local function update(input) local p = math.clamp((input.Position.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X, 0, 1); value = math.floor(min + (max - min) * p); Fill.Size = UDim2.new(p, 0, 1, 0); ValLabel.Text = tostring(value); if callback then callback(value) end end
 				Track.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; update(input) end end)
@@ -202,8 +197,9 @@ function Library:CreateWindow(titleText)
 				UserInputService.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
 			end
 
-			function CardLib:Dropdown(text, options, default, callback)
-				local selected = default or options[1]; local isOpened = false; local DDOpts = {}
+			function CardLib:AddDropdown(EConfig)
+				local text, options, selected, callback = EConfig.Title or "Dropdown", EConfig.Values or {}, EConfig.Default or "", EConfig.Callback
+				local isOpened = false; local DDOpts = {}
 				local DropFrame = Instance.new("Frame"); DropFrame.Size = UDim2.new(1, 0, 0, 34); DropFrame.BackgroundTransparency = 1; DropFrame.ClipsDescendants = true; DropFrame.Parent = ItemContainer
 				local TopBtn = Instance.new("TextButton"); TopBtn.Size = UDim2.new(1, 0, 0, 34); AddTheme(TopBtn, "BackgroundColor3", "Inactive"); TopBtn.Text = ""; TopBtn.AutoButtonColor = false; TopBtn.Parent = DropFrame; Instance.new("UICorner", TopBtn).CornerRadius = UDim.new(0, 6); local DStroke = Instance.new("UIStroke"); AddTheme(DStroke, "Color", "Border"); DStroke.Parent = TopBtn
 				local Title = Instance.new("TextLabel"); Title.Size = UDim2.new(0.5, 0, 1, 0); Title.Position = UDim2.new(0, 12, 0, 0); Title.BackgroundTransparency = 1; Title.Text = text; Title.Font = Enum.Font.GothamMedium; AddTheme(Title, "TextColor3", "Muted"); Title.TextSize = 12; Title.TextXAlignment = Enum.TextXAlignment.Left; Title.Parent = TopBtn
@@ -225,8 +221,9 @@ function Library:CreateWindow(titleText)
 				return DDOpts
 			end
 
-			function CardLib:Keybind(text, default, callback)
-				local binding = false; local key = default or Enum.KeyCode.F
+			function CardLib:AddKeybind(EConfig)
+				local text, key, callback = EConfig.Title or "Keybind", EConfig.Default or Enum.KeyCode.F, EConfig.Callback
+				local binding = false
 				local KeyFrame = Instance.new("TextButton"); KeyFrame.Size = UDim2.new(1, 0, 0, 34); KeyFrame.BackgroundTransparency = 1; KeyFrame.Text = ""; KeyFrame.AutoButtonColor = false; KeyFrame.Parent = ItemContainer
 				local Label = Instance.new("TextLabel"); Label.Size = UDim2.new(1, -80, 1, 0); Label.BackgroundTransparency = 1; Label.Text = text; Label.Font = Enum.Font.GothamMedium; AddTheme(Label, "TextColor3", "Muted"); Label.TextSize = 12; Label.TextXAlignment = Enum.TextXAlignment.Left; Label.Parent = KeyFrame
 				local BindBtn = Instance.new("TextButton"); BindBtn.Size = UDim2.new(0, 60, 0, 22); BindBtn.Position = UDim2.new(1, -60, 0.5, -11); AddTheme(BindBtn, "BackgroundColor3", "Inactive"); BindBtn.Text = key.Name; BindBtn.Font = Enum.Font.GothamBold; AddTheme(BindBtn, "TextColor3", "Text"); BindBtn.TextSize = 11; BindBtn.Parent = KeyFrame; Instance.new("UICorner", BindBtn).CornerRadius = UDim.new(0, 4)
@@ -235,11 +232,12 @@ function Library:CreateWindow(titleText)
 				UserInputService.InputBegan:Connect(function(input) if binding and input.UserInputType == Enum.UserInputType.Keyboard then key = input.KeyCode; BindBtn.Text = key.Name; binding = false; if callback then callback(key) end end end)
 			end
 
-			function CardLib:Textbox(text, placeholder, callback)
+			function CardLib:AddInput(EConfig)
+				local text, placeholder, callback = EConfig.Title or "Input", EConfig.Placeholder or "", EConfig.Callback
 				local TxtFrame = Instance.new("Frame"); TxtFrame.Size = UDim2.new(1, 0, 0, 34); TxtFrame.BackgroundTransparency = 1; TxtFrame.Parent = ItemContainer
 				local Label = Instance.new("TextLabel"); Label.Size = UDim2.new(0.5, 0, 1, 0); Label.BackgroundTransparency = 1; Label.Text = text; Label.Font = Enum.Font.GothamMedium; AddTheme(Label, "TextColor3", "Muted"); Label.TextSize = 12; Label.TextXAlignment = Enum.TextXAlignment.Left; Label.Parent = TxtFrame
 				local InputBg = Instance.new("Frame"); InputBg.Size = UDim2.new(0.5, 0, 0, 24); InputBg.Position = UDim2.new(0.5, 0, 0.5, -12); AddTheme(InputBg, "BackgroundColor3", "Inactive"); InputBg.Parent = TxtFrame; Instance.new("UICorner", InputBg).CornerRadius = UDim.new(0, 4); local IStroke = Instance.new("UIStroke"); AddTheme(IStroke, "Color", "Border"); IStroke.Parent = InputBg
-				local Box = Instance.new("TextBox"); Box.Size = UDim2.new(1, -10, 1, 0); Box.Position = UDim2.new(0, 5, 0, 0); Box.BackgroundTransparency = 1; Box.Text = ""; Box.PlaceholderText = placeholder or ""; Box.Font = Enum.Font.Gotham; AddTheme(Box, "TextColor3", "Text"); AddTheme(Box, "PlaceholderColor3", "Muted"); Box.TextSize = 11; Box.TextXAlignment = Enum.TextXAlignment.Right; Box.ClearTextOnFocus = false; Box.Parent = InputBg
+				local Box = Instance.new("TextBox"); Box.Size = UDim2.new(1, -10, 1, 0); Box.Position = UDim2.new(0, 5, 0, 0); Box.BackgroundTransparency = 1; Box.Text = ""; Box.PlaceholderText = placeholder; Box.Font = Enum.Font.Gotham; AddTheme(Box, "TextColor3", "Text"); AddTheme(Box, "PlaceholderColor3", "Muted"); Box.TextSize = 11; Box.TextXAlignment = Enum.TextXAlignment.Right; Box.ClearTextOnFocus = false; Box.Parent = InputBg
 
 				Box.FocusLost:Connect(function() if callback then callback(Box.Text) end end)
 			end
@@ -252,5 +250,4 @@ function Library:CreateWindow(titleText)
 	return WindowLib
 end
 
--- ВОТ ЭТО ОБЯЗАТЕЛЬНО ДОЛЖНО БЫТЬ В КОНЦЕ ФАЙЛА НА GITHUB
 return Library
