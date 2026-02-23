@@ -1,7 +1,3 @@
--- =========================================================================
--- SOFTER UI LIBRARY CORE (RESTORED CARD DESIGN + FLUENT SYNTAX)
--- =========================================================================
-
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
@@ -25,7 +21,6 @@ local Library = {
 	Flags = {} -- Хранилище всех элементов для конфига
 }
 
--- === ТЕМЫ ===
 local Themes = {
 	Dark = {
 		Bg = Color3.fromRGB(15, 15, 18),
@@ -377,9 +372,6 @@ Library.DeleteConfig = Library.DeleteFile
 
 local NOISE_TEXTURE = "rbxassetid://10217435265"
 
--- =========================================================================
--- СОЗДАНИЕ ГЛАВНОГО ОКНА
--- =========================================================================
 function Library:CreateWindow(Config)
 	local createConfig = type(Config) == "table" and Config or {Title = Config}
 	local titleText = createConfig.Title or "Softer UI"
@@ -442,7 +434,6 @@ function Library:CreateWindow(Config)
 	NotifyLayout.Padding = UDim.new(0, 10)
 	NotifyLayout.Parent = NotifyContainer
 
-	-- === ФУНКЦИЯ УВЕДОМЛЕНИЙ ===
 	function Library:Notify(NConfig)
 		NConfig = NConfig or {}
 		local title = NConfig.Title or "Notification"
@@ -611,7 +602,6 @@ function Library:CreateWindow(Config)
 		frameCount = 0
 	end))
 
-	-- === ГЛАВНОЕ ОКНО ===
 	local MainFrame = Instance.new("Frame")
 	MainFrame.Name = "MainFrame"
 	MainFrame.Size = UDim2.new(0, 750, 0, 480)
@@ -645,7 +635,6 @@ function Library:CreateWindow(Config)
 	AddTheme(MainStroke, "Color", "Border")
 	MainStroke.Parent = MainFrame
 
-	-- ЛОГИКА СКРЫТИЯ GUI
 	function Library:SetVisible(state)
 		Library.IsVisible = state
 		if state then
@@ -704,7 +693,6 @@ function Library:CreateWindow(Config)
 		end
 	end))
 
-	-- БОКОВОЕ МЕНЮ
 	local Sidebar = Instance.new("Frame")
 	Sidebar.Size = UDim2.new(0, 170, 1, 0)
 	Sidebar.BackgroundTransparency = 1
@@ -831,9 +819,6 @@ function Library:CreateWindow(Config)
 		}
 	end
 
-	-- =========================================================================
-	-- ФУНКЦИЯ ДОБАВЛЕНИЯ ВКЛАДКИ
-	-- =========================================================================
 	function WindowLib:AddTab(TConfig)
 		local tabConfig = type(TConfig) == "table" and TConfig or {Title = TConfig}
 		local name = tabConfig.Title or "Tab"
@@ -945,9 +930,6 @@ function Library:CreateWindow(Config)
 		local TabLib = {}
 		local isLeftSide = true
 
-		-- =========================================================================
-		-- ФУНКЦИЯ ДОБАВЛЕНИЯ КАРТОЧКИ (ВОЗВРАЩЕНА ДЛЯ СОВМЕСТИМОСТИ И ДИЗАЙНА)
-		-- =========================================================================
 		function TabLib:AddCard(CConfig)
 			local cardConfig = type(CConfig) == "table" and CConfig or {Title = CConfig}
 			local title = cardConfig.Title or "Card"
